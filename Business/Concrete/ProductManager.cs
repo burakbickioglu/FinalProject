@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Text;
 using Business.Abstract;
 using Business.Constants;
+using Business.ValidationRules.FluentValidation;
+using Core.CrossCuttingConcerns.Validation;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
 using Entities.DTOs;
+using FluentValidation;
 
 namespace Business.Concrete
 {
@@ -23,11 +26,11 @@ namespace Business.Concrete
         {
             // İş Kodları
             // Yetkisi var mı ?
-            if (DateTime.Now.Hour==23)
+            if (DateTime.Now.Hour == 23)
             {
                 return new ErrorDataResult<List<Product>>(Messages.MaintenanceTime);
             }
-            return new SuccessDataResult<List<Product>>(_productDal.GetAll(),Messages.ProductsListed);
+            return new SuccessDataResult<List<Product>>(_productDal.GetAll(), Messages.ProductsListed);
         }
 
         public IDataResult<List<Product>> GetAllByCategoryId(int id)
@@ -52,11 +55,8 @@ namespace Business.Concrete
         public IResult Add(Product product)
         {
             // business codes
-            if (product.ProductName.Length<2)
-            {
-                return new ErrorResult(Messages.ProductNameInvalid);
-            }
-            
+            ValidationTool.Validate(new ProductValidator(),product);
+
             _productDal.Add(product);
             return new SuccessResult(Messages.ProductAdded);
         }
